@@ -8,6 +8,7 @@ public class CustomerProfile : Profile
 {
     public CustomerProfile()
     {
+        CreateMap<Customers, GetAllCustomersQueryResponse>();
         CreateMap<Customers, GetCustomerByIdQueryResponse>();
     }
 }
