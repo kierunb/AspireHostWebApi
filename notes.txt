@@ -1,0 +1,32 @@
+
+CQRS - definition
+
+- CQRS stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store. 
+- Implementing CQRS in your application can maximize its performance, scalability, and security. 
+- The flexibility created by migrating to CQRS allows a system to better evolve over time and prevents update commands from causing merge conflicts at the domain level.
+- CQRS is a simple pattern – two objects for command/queries where once there was one.
+
+References:
+https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs
+https://lostechies.com/jimmybogard/2016/10/27/cqrsmediatr-implementation-patterns/
+https://codewithmukesh.com/blog/fluentvalidation-in-aspnet-core/
+
+Nugets:
+https://github.com/jbogard/MediatR
+https://docs.fluentvalidation.net/en/latest/
+https://docs.automapper.org/en/latest/index.html
+https://github.com/yavorfingarov/Reprise
+
+
+// integrating fluent validation with with ASP.NET Core
+https://docs.fluentvalidation.net/en/latest/aspnet.html
+https://github.com/SharpGrip/FluentValidation.AutoValidation
+
+// integrating fluent validation with MediatR
+https://www.milanjovanovic.tech/blog/cqrs-validation-with-mediatr-pipeline-and-fluentvalidation
+
+// REPR pattern with Reprise
+https://github.com/yavorfingarov/Reprise
+
+Samples and articles:
+https://codewithmukesh.com/blog/cqrs-and-mediatr-in-aspnet-core/
