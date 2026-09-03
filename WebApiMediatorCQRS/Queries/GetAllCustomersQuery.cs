@@ -47,7 +47,8 @@ public class GetAllCustomersQueryHandler(
         logger.LogInformation("Handling {type}", typeof(GetAllCustomersQuery).Name);
 
         return await northwindContext
-            .Customers.ProjectTo<GetAllCustomersQueryResponse>(mapper.ConfigurationProvider)
+            .Customers.OrderBy(x => x.CustomerId)
+            .ProjectTo<GetAllCustomersQueryResponse>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
 }
