@@ -1,6 +1,8 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.RateLimiting;
 using Reprise;
+using System.Threading.RateLimiting;
 using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 using WebApiMediatorCQRS.Handlers;
@@ -19,6 +21,28 @@ builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Rate limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: string.Join(
+                ':',
+                httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                httpContext.Request.Path.ToString()
+            ),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }
+        )
+    );
+});
 
 // OutputCache
 builder.Services.AddOutputCache(options =>
@@ -63,6 +87,7 @@ app.UseExceptionHandler();
 //    exceptionHandlerApp.Run(async context => await Results.Problem().ExecuteAsync(context))
 //);
 
+app.UseRateLimiter();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -81,3 +106,5 @@ app.MapEndpoints();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;
