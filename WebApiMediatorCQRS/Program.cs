@@ -28,10 +28,10 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: string.Join(
-                ':',
+            partitionKey: string.Concat(
                 httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                httpContext.Request.Path.ToString()
+                ":",
+                httpContext.GetEndpoint()?.DisplayName ?? httpContext.Request.Path.Value ?? "/"
             ),
             factory: _ => new FixedWindowRateLimiterOptions
             {
