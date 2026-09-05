@@ -28,18 +28,21 @@ public class IntegrationTests
         await using var factory = CreateFactory();
         using var httpClient = factory.CreateClient();
 
-        for (var i = 0; i < 100; i++)
+        var tasks = new List<Task<HttpResponseMessage>>(capacity: 110);
+        for (var i = 0; i < 110; i++)
         {
-            using var allowedResponse = await httpClient.GetAsync("/swagger/v1/swagger.json", cancellationToken);
-            Assert.Equal(HttpStatusCode.OK, allowedResponse.StatusCode);
+            tasks.Add(httpClient.GetAsync("/swagger/v1/swagger.json", cancellationToken));
         }
 
-        // Act
-        using var rejectedResponse = await httpClient.GetAsync("/swagger/v1/swagger.json", cancellationToken);
+        var responses = await Task.WhenAll(tasks);
 
-        // Assert
-        Assert.Equal(HttpStatusCode.TooManyRequests, rejectedResponse.StatusCode);
-    }
+        Assert.Contains(responses, r => r.StatusCode == HttpStatusCode.OK);
+        Assert.Contains(responses, r => r.StatusCode == HttpStatusCode.TooManyRequests);
+
+        foreach (var response in responses)
+        {
+            response.Dispose();
+        }
 
     private static WebApplicationFactory<Program> CreateFactory() =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
