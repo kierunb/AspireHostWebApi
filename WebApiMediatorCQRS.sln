@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.9.12120.119 stable
+VisualStudioVersion = 18.9.12120.119
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApiMediatorCQRS", "WebApiMediatorCQRS\WebApiMediatorCQRS.csproj", "{CF13EFA0-68A7-4721-B346-4B0BB1B0EA3E}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireAppHost.AppHost", "AspireAppHost\AspireAppHost.AppHost\AspireAppHost.AppHost.csproj", "{397044D8-88BA-4A17-AADA-25054C222A3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireAppHost.ServiceDefaults", "AspireAppHost\AspireAppHost.ServiceDefaults\AspireAppHost.ServiceDefaults.csproj", "{577C5D39-CDC5-3901-5971-FEA8D410833A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiMediatorCQRS.Tests", "WebApiMediatorCQRS.Tests\WebApiMediatorCQRS.Tests.csproj", "{8BF891F0-6812-428A-AC47-8E778D3286FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{577C5D39-CDC5-3901-5971-FEA8D410833A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{577C5D39-CDC5-3901-5971-FEA8D410833A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{577C5D39-CDC5-3901-5971-FEA8D410833A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BF891F0-6812-428A-AC47-8E778D3286FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BF891F0-6812-428A-AC47-8E778D3286FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BF891F0-6812-428A-AC47-8E778D3286FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BF891F0-6812-428A-AC47-8E778D3286FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
