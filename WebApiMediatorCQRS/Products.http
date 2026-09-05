@@ -1,0 +1,45 @@
+@host = http://localhost:5039
+
+### List products
+GET {{host}}/products
+Accept: application/json
+
+### Create a product
+# @name createProduct
+POST {{host}}/products
+Content-Type: application/json
+
+{
+  "productName": "API Test Product",
+  "supplierId": null,
+  "categoryId": null,
+  "quantityPerUnit": "10 boxes",
+  "unitPrice": 12.50,
+  "unitsInStock": 25,
+  "unitsOnOrder": 0,
+  "reorderLevel": 5,
+  "discontinued": false
+}
+
+### Get the created product
+GET {{host}}/products/{{createProduct.response.body.$.productId}}
+Accept: application/json
+
+### Replace the created product
+PUT {{host}}/products/{{createProduct.response.body.$.productId}}
+Content-Type: application/json
+
+{
+  "productName": "Updated API Test Product",
+  "supplierId": null,
+  "categoryId": null,
+  "quantityPerUnit": "20 boxes",
+  "unitPrice": 15.75,
+  "unitsInStock": 30,
+  "unitsOnOrder": 2,
+  "reorderLevel": 8,
+  "discontinued": false
+}
+
+### Delete the created product
+DELETE {{host}}/products/{{createProduct.response.body.$.productId}}
