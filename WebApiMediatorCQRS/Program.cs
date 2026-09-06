@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Reprise;
 using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
@@ -20,13 +21,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// OutputCache
-builder.Services.AddOutputCache(options =>
-{
-    options.AddBasePolicy(builder => builder.Expire(TimeSpan.FromSeconds(10)));
-    options.AddPolicy("Expire20", builder => builder.Expire(TimeSpan.FromSeconds(20)));
-    options.AddPolicy("Expire30", builder => builder.Expire(TimeSpan.FromSeconds(30)));
-});
+// Query caching
+builder.Services.AddHybridCache();
+builder.Services.Configure<HybridCacheOptions>(builder.Configuration.GetSection("HybridCache"));
+builder.Services.AddSingleton<CacheInvalidationState>();
+builder.Services.AddScoped<CacheExecutionContext>();
 
 // Entity Framework Core
 builder.AddSqlServerDbContext<NorthwindContext>(
@@ -40,7 +39,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(domainAssembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     //cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
-    //cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
+    cfg.AddOpenBehavior(typeof(CacheInvalidationBehavior<,>));
+    cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
 });
 
 // FluentValidation
@@ -75,7 +75,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseOutputCache();
 app.UseAuthorization();
 app.MapEndpoints();
 app.MapControllers();

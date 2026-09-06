@@ -3,6 +3,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WebApiMediatorCQRS.ApiModels;
+using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 
 namespace WebApiMediatorCQRS.Commands;
@@ -31,7 +32,11 @@ public sealed record CreateProductCommand(
     short? UnitsOnOrder,
     short? ReorderLevel,
     bool Discontinued
-) : IRequest<ProductMutationResult>;
+) : IInvalidatesCache<ProductMutationResult>
+{
+    public IEnumerable<string> CacheTags => [QueryCache.Products];
+    public bool IsSuccessful(ProductMutationResult response) => response.Status == ProductMutationStatus.Success;
+}
 
 public sealed class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
 {
@@ -129,7 +134,11 @@ public sealed record UpdateProductCommand(
     short? UnitsOnOrder,
     short? ReorderLevel,
     bool Discontinued
-) : IRequest<ProductMutationResult>;
+) : IInvalidatesCache<ProductMutationResult>
+{
+    public IEnumerable<string> CacheTags => [QueryCache.Products];
+    public bool IsSuccessful(ProductMutationResult response) => response.Status == ProductMutationStatus.Success;
+}
 
 public sealed class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
 {
@@ -201,7 +210,11 @@ public sealed class UpdateProductCommandHandler(
     }
 }
 
-public sealed record DeleteProductCommand(int ProductId) : IRequest<ProductMutationStatus>;
+public sealed record DeleteProductCommand(int ProductId) : IInvalidatesCache<ProductMutationStatus>
+{
+    public IEnumerable<string> CacheTags => [QueryCache.Products];
+    public bool IsSuccessful(ProductMutationStatus response) => response == ProductMutationStatus.Success;
+}
 
 public sealed class DeleteProductCommandValidator : AbstractValidator<DeleteProductCommand>
 {

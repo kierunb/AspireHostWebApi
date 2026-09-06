@@ -4,11 +4,16 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WebApiMediatorCQRS.ApiModels;
+using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 
 namespace WebApiMediatorCQRS.Queries;
 
-public sealed record GetAllProductsQuery : IRequest<IReadOnlyList<ProductResponse>>;
+public sealed record GetAllProductsQuery : ICacheable<IReadOnlyList<ProductResponse>>
+{
+    public string CacheKey => QueryCache.Key<GetAllProductsQuery>();
+    public IEnumerable<string> CacheTags => [QueryCache.Products];
+}
 
 public sealed class GetAllProductsQueryHandler(
     IMapper mapper,
@@ -26,7 +31,12 @@ public sealed class GetAllProductsQueryHandler(
             .ToListAsync(cancellationToken);
 }
 
-public sealed record GetProductByIdQuery(int ProductId) : IRequest<ProductResponse?>;
+public sealed record GetProductByIdQuery(int ProductId) : ICacheable<ProductResponse?>
+{
+    public string CacheKey => QueryCache.Key<GetProductByIdQuery>(ProductId);
+    public IEnumerable<string> CacheTags => [QueryCache.Products];
+    public bool BypassCache => ProductId <= 0;
+}
 
 public sealed class GetProductByIdQueryValidator : AbstractValidator<GetProductByIdQuery>
 {
