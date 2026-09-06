@@ -58,7 +58,7 @@ public sealed class CreateProductCommandHandler(
         CancellationToken cancellationToken
     )
     {
-        var referenceStatus = await ValidateReferencesAsync(
+        var referenceStatus = await ProductReferenceValidator.ValidateReferencesAsync(
             request.SupplierId,
             request.CategoryId,
             northwindContext,
@@ -88,8 +88,11 @@ public sealed class CreateProductCommandHandler(
             mapper.Map<ProductResponse>(product)
         );
     }
+}
 
-    private static async Task<ProductMutationStatus> ValidateReferencesAsync(
+internal static class ProductReferenceValidator
+{
+    public static async Task<ProductMutationStatus> ValidateReferencesAsync(
         int? supplierId,
         int? categoryId,
         NorthwindContext northwindContext,
@@ -164,23 +167,14 @@ public sealed class UpdateProductCommandHandler(
         if (product is null)
             return new ProductMutationResult(ProductMutationStatus.NotFound);
 
-        if (
-            request.SupplierId.HasValue
-            && !await northwindContext.Suppliers.AnyAsync(
-                supplier => supplier.SupplierId == request.SupplierId.Value,
-                cancellationToken
-            )
-        )
-            return new ProductMutationResult(ProductMutationStatus.InvalidSupplier);
-
-        if (
-            request.CategoryId.HasValue
-            && !await northwindContext.Categories.AnyAsync(
-                category => category.CategoryId == request.CategoryId.Value,
-                cancellationToken
-            )
-        )
-            return new ProductMutationResult(ProductMutationStatus.InvalidCategory);
+        var referenceStatus = await ProductReferenceValidator.ValidateReferencesAsync(
+            request.SupplierId,
+            request.CategoryId,
+            northwindContext,
+            cancellationToken
+        );
+        if (referenceStatus is not ProductMutationStatus.Success)
+            return new ProductMutationResult(referenceStatus);
 
         product.ProductName = request.ProductName;
         product.SupplierId = request.SupplierId;
