@@ -1,23 +1,62 @@
-﻿using System.Text;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text.Json;
 using MediatR;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace WebApiMediatorCQRS.Behaviors;
 
-public interface ICacheable
+public interface ICacheable<TResponse> : IRequest<TResponse>
 {
-    bool BypassCache { get; }
     string CacheKey { get; }
-    int SlidingExpirationInMinutes { get; }
-    int AbsoluteExpirationInMinutes { get; }
+    TimeSpan? Expiration => null;
+    IEnumerable<string> CacheTags => [];
+    bool BypassCache => false;
+    bool IsSuccessful(TResponse response) => response is not null;
 }
 
-public class CachingBehavior<TRequest, TResponse>(
+public static class QueryCache
+{
+    public const string Customers = "customers";
+    public const string Products = "products";
+    public const string Suppliers = "suppliers";
+
+    public static string Key<TQuery>(params object?[] parameters) =>
+        $"{typeof(TQuery).FullName}:v1:{Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(parameters)))}";
+}
+
+public sealed class CacheExecutionContext
+{
+    public bool IsExecuting { get; set; }
+}
+
+public sealed class CacheInvalidationState
+{
+    private readonly ConcurrentDictionary<string, long> generations = new(StringComparer.Ordinal);
+
+    public string GetKey(string key, IEnumerable<string> tags) =>
+        QueryCache.Key<CacheInvalidationState>(
+            key,
+            tags.Order(StringComparer.Ordinal)
+                .Select(tag => new { Tag = tag, Generation = generations.GetValueOrDefault(tag) })
+                .ToArray()
+        );
+
+    public void Invalidate(IEnumerable<string> tags)
+    {
+        foreach (var tag in tags)
+            generations.AddOrUpdate(tag, 1, static (_, generation) => generation + 1);
+    }
+}
+
+public sealed class CachingBehavior<TRequest, TResponse>(
     ILogger<CachingBehavior<TRequest, TResponse>> logger,
-    IDistributedCache cache
+    HybridCache cache,
+    IServiceScopeFactory scopeFactory,
+    CacheExecutionContext executionContext,
+    CacheInvalidationState invalidationState
 ) : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : ICacheable
+    where TRequest : notnull
 {
     public async Task<TResponse> Handle(
         TRequest request,
@@ -25,45 +64,55 @@ public class CachingBehavior<TRequest, TResponse>(
         CancellationToken cancellationToken
     )
     {
-        TResponse response;
-        if (request.BypassCache)
-            return await next();
-        async Task<TResponse> GetResponseAndAddToCache()
-        {
-            response = await next();
-            if (response != null)
-            {
-                var slidingExpiration =
-                    request.SlidingExpirationInMinutes == 0
-                        ? 30
-                        : request.SlidingExpirationInMinutes;
-                var absoluteExpiration =
-                    request.AbsoluteExpirationInMinutes == 0
-                        ? 60
-                        : request.AbsoluteExpirationInMinutes;
-                var options = new DistributedCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(slidingExpiration))
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(absoluteExpiration));
+        if (executionContext.IsExecuting || request is not ICacheable<TResponse> cacheable || cacheable.BypassCache)
+            return await next(cancellationToken);
 
-                var serializedData = Encoding.Default.GetBytes(JsonSerializer.Serialize(response));
-                await cache.SetAsync(request.CacheKey, serializedData, options, cancellationToken);
+        var tags = cacheable.CacheTags.ToArray();
+        // A pre-mutation factory may finish later, but cannot populate the current generation.
+        var key = invalidationState.GetKey(cacheable.CacheKey, tags);
+        var options = cacheable.Expiration is { } expiration
+            ? new HybridCacheEntryOptions
+            {
+                Expiration = expiration,
+                LocalCacheExpiration = expiration,
             }
-            return response;
-        }
-        var cachedResponse = await cache.GetAsync(request.CacheKey, cancellationToken);
-        if (cachedResponse != null)
+            : null;
+
+        logger.LogDebug("Cache lookup for {QueryType}", typeof(TRequest).Name);
+        try
         {
-            response = JsonSerializer.Deserialize<TResponse>(
-                Encoding.Default.GetString(cachedResponse)
-            )!;
-            logger.LogInformation("fetched from cache with key : {CacheKey}", request.CacheKey);
-            cache.Refresh(request.CacheKey);
+            return await cache.GetOrCreateAsync(
+                key,
+                async token =>
+                {
+                    logger.LogDebug("Cache miss for {QueryType}", typeof(TRequest).Name);
+                    // Shared work must outlive any individual caller's request scope.
+                    await using var scope = scopeFactory.CreateAsyncScope();
+                    scope.ServiceProvider.GetRequiredService<CacheExecutionContext>().IsExecuting = true;
+                    var response = await scope.ServiceProvider.GetRequiredService<ISender>().Send(cacheable, token);
+                    if (!cacheable.IsSuccessful(response))
+                    {
+                        // A failed factory is not stored, including for other stampede waiters.
+                        throw new UnsuccessfulResponseException(response);
+                    }
+
+                    logger.LogDebug("Caching successful result for {QueryType}", typeof(TRequest).Name);
+                    return response;
+                },
+                options,
+                tags,
+                cancellationToken
+            );
         }
-        else
+        catch (UnsuccessfulResponseException exception)
         {
-            response = await GetResponseAndAddToCache();
-            logger.LogInformation("added to cache with key : {CacheKey}", request.CacheKey);
+            logger.LogDebug("Not caching unsuccessful result for {QueryType}", typeof(TRequest).Name);
+            return exception.Response;
         }
-        return response;
+    }
+
+    private sealed class UnsuccessfulResponseException(TResponse response) : Exception
+    {
+        public TResponse Response { get; } = response;
     }
 }

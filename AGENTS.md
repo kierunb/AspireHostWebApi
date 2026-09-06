@@ -78,14 +78,17 @@ Keep changes within the existing feature boundaries and mirror the nearest examp
 ## Pipeline And Data Pitfalls
 
 `Program.cs` is the source of truth for middleware and dependency injection order.
-Only `LoggingBehavior<,>` is active in the MediatR pipeline. The validation and
-caching behaviors are commented out, so do not assume cross-cutting validation or
-caching is enabled.
+`LoggingBehavior<,>`, `CacheInvalidationBehavior<,>`, and `CachingBehavior<,>` are
+active in the MediatR pipeline. The validation behavior is still commented out,
+so do not assume cross-cutting validation is enabled.
 
 Some routes validate explicitly with `IValidator<T>`. Before enabling
 `ValidationBehavior<,>`, remove duplicate route-level validation and verify that
-`GlobalExceptionHandler` still produces the expected HTTP 400 response. The disabled
-`CachingBehavior<,>` only applies to requests implementing `ICacheable`.
+`GlobalExceptionHandler` still produces the expected HTTP 400 response.
+`CachingBehavior<,>` only caches requests implementing `ICacheable<TResponse>`.
+Successful commands affecting cached resources must implement
+`IInvalidatesCache<TResponse>` with the corresponding resource tags. See
+`readme.md` for configuration and concurrency boundaries.
 
 Files in `WebApiMediatorCQRS/Database/` were reverse-engineered with EF Core Power
 Tools. Treat generated entities and `NorthwindContext.cs` as generated code; prefer

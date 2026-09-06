@@ -2,11 +2,16 @@
 using AutoMapper.QueryableExtensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 
 namespace WebApiMediatorCQRS.Queries;
 
-public record GetAllCustomersQuery : IRequest<IEnumerable<GetAllCustomersQueryResponse>>;
+public record GetAllCustomersQuery : ICacheable<IEnumerable<GetAllCustomersQueryResponse>>
+{
+    public string CacheKey => QueryCache.Key<GetAllCustomersQuery>();
+    public IEnumerable<string> CacheTags => [QueryCache.Customers];
+}
 
 public record GetAllCustomersQueryResponse
 {
