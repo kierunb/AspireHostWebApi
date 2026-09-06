@@ -1,0 +1,103 @@
+@host = http://localhost:5039
+@existingSupplierId = 1
+@createdSupplierId = 30
+@missingSupplierId = 2147483647
+@referencedSupplierId = 1
+
+# WARNING: Run POST, PUT, and DELETE requests only against an isolated,
+# disposable Northwind database. Replace createdSupplierId with the ID returned
+# by the create request before running replacement or deletion requests.
+
+### List suppliers - 200 OK
+GET {{host}}/suppliers
+Accept: application/json
+
+### Get an existing supplier - 200 OK
+GET {{host}}/suppliers/{{existingSupplierId}}
+Accept: application/json
+
+### Create a supplier - 201 Created
+POST {{host}}/suppliers
+Content-Type: application/json
+
+{
+  "companyName": "API Test Supplier",
+  "contactName": "Ada Example",
+  "contactTitle": "Owner",
+  "address": "1 Test Street",
+  "city": "Seattle",
+  "region": "WA",
+  "postalCode": "98101",
+  "country": "USA",
+  "phone": "555-0100",
+  "fax": null,
+  "homePage": "https://example.test"
+}
+
+### Replace the created supplier and clear nullable fields - 200 OK
+PUT {{host}}/suppliers/{{createdSupplierId}}
+Content-Type: application/json
+
+{
+  "companyName": "Updated API Test Supplier",
+  "contactName": null,
+  "contactTitle": null,
+  "address": null,
+  "city": null,
+  "region": null,
+  "postalCode": null,
+  "country": null,
+  "phone": null,
+  "fax": null,
+  "homePage": null
+}
+
+### Delete the created supplier - 204 No Content
+DELETE {{host}}/suppliers/{{createdSupplierId}}
+
+### Reject an invalid supplier ID - 400 Bad Request
+GET {{host}}/suppliers/0
+Accept: application/json
+
+### Reject an empty company name - 400 Bad Request
+POST {{host}}/suppliers
+Content-Type: application/json
+
+{
+  "companyName": "",
+  "contactName": null,
+  "contactTitle": null,
+  "address": null,
+  "city": null,
+  "region": null,
+  "postalCode": null,
+  "country": null,
+  "phone": null,
+  "fax": null,
+  "homePage": null
+}
+
+### Get a missing supplier - 404 Not Found
+GET {{host}}/suppliers/{{missingSupplierId}}
+Accept: application/json
+
+### Do not create a missing supplier during replacement - 404 Not Found
+PUT {{host}}/suppliers/{{missingSupplierId}}
+Content-Type: application/json
+
+{
+  "companyName": "Missing API Test Supplier",
+  "contactName": null,
+  "contactTitle": null,
+  "address": null,
+  "city": null,
+  "region": null,
+  "postalCode": null,
+  "country": null,
+  "phone": null,
+  "fax": null,
+  "homePage": null
+}
+
+### Reject deletion of a supplier referenced by products - 409 Conflict
+DELETE {{host}}/suppliers/{{referencedSupplierId}}
