@@ -60,60 +60,60 @@ Implement complete Supplier CRUD as a Product-style Reprise and MediatR vertical
 
 ## Implementation Checklist
 
-### [ ] Implementation Phase 1: Supplier Contracts and Mapping
+### [x] Implementation Phase 1: Supplier Contracts and Mapping
 
 <!-- parallelizable: false -->
 
-* [ ] Step 1.1: Create Supplier response, create, and replacement request records
+* [x] Step 1.1: Create Supplier response, create, and replacement request records
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 12-33)
-* [ ] Step 1.2: Create the Supplier AutoMapper profile
+* [x] Step 1.2: Create the Supplier AutoMapper profile
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 34-52)
-* [ ] Step 1.3: Validate contract and mapping compilation
+* [x] Step 1.3: Validate contract and mapping compilation
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 53-59)
 
-### [ ] Implementation Phase 2: Supplier CQRS Operations
+### [x] Implementation Phase 2: Supplier CQRS Operations
 
 <!-- parallelizable: true -->
 
-* [ ] Step 2.1: Implement list and by-ID Supplier queries
+* [x] Step 2.1: Implement list and by-ID Supplier queries
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 64-86)
-* [ ] Step 2.2: Implement create, replacement, and guarded delete commands
+* [x] Step 2.2: Implement create, replacement, and guarded delete commands
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 87-111)
-* [ ] Step 2.3: Validate the combined CQRS layer
+* [x] Step 2.3: Validate the combined CQRS layer
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 112-118)
 
 Query and command files can be implemented in parallel after Phase 1. Their shared API build runs after both work items complete.
 
-### [ ] Implementation Phase 3: Supplier HTTP Surface
+### [x] Implementation Phase 3: Supplier HTTP Surface
 
 <!-- parallelizable: true -->
 
-* [ ] Step 3.1: Implement collection and item read endpoints
+* [x] Step 3.1: Implement collection and item read endpoints
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 123-141)
-* [ ] Step 3.2: Implement create, replacement, and delete endpoints
+* [x] Step 3.2: Implement create, replacement, and delete endpoints
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 142-164)
-* [ ] Step 3.3: Add executable Supplier HTTP examples
+* [x] Step 3.3: Add executable Supplier HTTP examples
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 165-186)
-* [ ] Step 3.4: Validate endpoint compilation
+* [x] Step 3.4: Validate endpoint compilation
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 187-193)
 
 Read and mutation endpoint classes can be implemented in parallel after Phase 2. HTTP examples follow once both endpoint groups establish their final contracts.
 
-### [ ] Implementation Phase 4: Automated Tests and Repository Guidance
+### [x] Implementation Phase 4: Automated Tests and Repository Guidance
 
 <!-- parallelizable: false -->
 
-* [ ] Step 4.1: Add the direct API project reference to the test project
+* [x] Step 4.1: Add the direct API project reference to the test project
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 198-218)
-* [ ] Step 4.2: Add database-free Supplier validator tests
+* [x] Step 4.2: Add database-free Supplier validator tests
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 219-237)
-* [ ] Step 4.3: Add Supplier profile and scalar mapping tests
+* [x] Step 4.3: Add Supplier profile and scalar mapping tests
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 238-256)
-* [ ] Step 4.4: Add Aspire-based Supplier OpenAPI contract tests
+* [x] Step 4.4: Add Aspire-based Supplier OpenAPI contract tests
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 257-280)
-* [ ] Step 4.5: Correct repository test guidance
+* [x] Step 4.5: Correct repository test guidance
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 281-299)
-* [ ] Step 4.6: Build the solution and run the complete test project
+* [x] Step 4.6: Build the solution and run the complete test project
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 300-307)
 
 The test project reference is a shared prerequisite. Test files may be authored independently afterward, but this phase remains sequential to avoid concurrent project and shared AppHost test execution changes.
@@ -122,13 +122,13 @@ The test project reference is a shared prerequisite. Test files may be authored 
 
 <!-- parallelizable: false -->
 
-* [ ] Step 5.1: Run the full solution build and complete test suite
+* [x] Step 5.1: Run the full solution build and complete test suite
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 312-322)
 * [ ] Step 5.2: Verify SQL identity, foreign-key, and CRUD assumptions when an isolated database is available
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 323-333)
-* [ ] Step 5.3: Fix minor validation issues and rerun focused then full checks
+* [x] Step 5.3: Fix minor validation issues and rerun focused then full checks
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 334-337)
-* [ ] Step 5.4: Report runtime blockers that require additional research or infrastructure
+* [x] Step 5.4: Report runtime blockers that require additional research or infrastructure
   * Details: `.copilot-tracking/details/2026-09-06/suppliers-crud-web-api-details.md` (Lines 338-341)
 
 ## Planning Log

@@ -35,9 +35,18 @@ To run only the API, use:
 dotnet run --project WebApiMediatorCQRS/WebApiMediatorCQRS.csproj
 ```
 
-There is currently no automated test project. After a change, build the full solution
-and exercise the affected route. The API launch profiles use HTTP port `5039` and
-HTTPS port `7181`; Swagger is available only in the Development environment.
+The `WebApiMediatorCQRS.Tests` xUnit v3 project is included in the solution and uses
+the configured Microsoft Testing Platform bridge. Run the complete test project with:
+
+```powershell
+dotnet test WebApiMediatorCQRS.Tests/WebApiMediatorCQRS.Tests.csproj
+```
+
+The default suite contains database-free validator, mapping, and OpenAPI tests.
+Database mutation tests require an isolated Northwind-compatible database with
+deterministic setup and cleanup. Do not run destructive tests against the default
+developer LocalDB. The API launch profiles use HTTP port `5039` and HTTPS port
+`7181`; Swagger is available only in the Development environment.
 
 The current AppHost build emits `ASPIRE010` because `AspireUseCliBundle` resolves to
 `false`. The build still succeeds, but Aspire features that require the CLI bundle may
@@ -86,8 +95,9 @@ overwrite direct edits.
 ## Validation Checklist
 
 * Build `WebApiMediatorCQRS.sln` after every code change
+* Run `dotnet test WebApiMediatorCQRS.Tests/WebApiMediatorCQRS.Tests.csproj`
 * Run the API or Aspire AppHost and exercise each affected HTTP route
-* Check database-backed changes against a reachable Northwind LocalDB instance
+* Verify database-backed mutations only against an isolated Northwind-compatible database
 * Confirm both Reprise endpoint discovery and MVC routing when registration changes
 * Verify validation failures and unhandled exceptions through the global problem
   details handler
