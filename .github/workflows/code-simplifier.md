@@ -6,6 +6,9 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  copilot-requests: write
+
+engine: copilot
 
 safe-outputs:
   create-pull-request:
