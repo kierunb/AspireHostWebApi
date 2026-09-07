@@ -3,6 +3,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WebApiMediatorCQRS.ApiModels;
+using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 
 namespace WebApiMediatorCQRS.Commands;
@@ -31,7 +32,11 @@ public sealed record CreateSupplierCommand(
     string? Phone,
     string? Fax,
     string? HomePage
-) : IRequest<SupplierMutationResult>;
+) : IInvalidatesCache<SupplierMutationResult>
+{
+    public IEnumerable<string> CacheTags => [QueryCache.Suppliers];
+    public bool IsSuccessful(SupplierMutationResult response) => response.Status == SupplierMutationStatus.Success;
+}
 
 public sealed class CreateSupplierCommandValidator : AbstractValidator<CreateSupplierCommand>
 {
@@ -98,7 +103,11 @@ public sealed record UpdateSupplierCommand(
     string? Phone,
     string? Fax,
     string? HomePage
-) : IRequest<SupplierMutationResult>;
+) : IInvalidatesCache<SupplierMutationResult>
+{
+    public IEnumerable<string> CacheTags => [QueryCache.Suppliers];
+    public bool IsSuccessful(SupplierMutationResult response) => response.Status == SupplierMutationStatus.Success;
+}
 
 public sealed class UpdateSupplierCommandValidator : AbstractValidator<UpdateSupplierCommand>
 {
@@ -156,7 +165,11 @@ public sealed class UpdateSupplierCommandHandler(
     }
 }
 
-public sealed record DeleteSupplierCommand(int SupplierId) : IRequest<SupplierMutationStatus>;
+public sealed record DeleteSupplierCommand(int SupplierId) : IInvalidatesCache<SupplierMutationStatus>
+{
+    public IEnumerable<string> CacheTags => [QueryCache.Suppliers];
+    public bool IsSuccessful(SupplierMutationStatus response) => response == SupplierMutationStatus.Success;
+}
 
 public sealed class DeleteSupplierCommandValidator : AbstractValidator<DeleteSupplierCommand>
 {

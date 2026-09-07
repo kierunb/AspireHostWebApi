@@ -3,11 +3,17 @@ using AutoMapper.QueryableExtensions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 
 namespace WebApiMediatorCQRS.Queries;
 
-public record GetCustomerByIdQuery(string Id) : IRequest<GetCustomerByIdQueryResponse>;
+public record GetCustomerByIdQuery(string Id) : ICacheable<GetCustomerByIdQueryResponse?>
+{
+    public string CacheKey => QueryCache.Key<GetCustomerByIdQuery>(Id);
+    public IEnumerable<string> CacheTags => [QueryCache.Customers];
+    public bool BypassCache => Id is null || Id.Length != 5;
+}
 
 public class GetCustomerByIdQueryValidator : AbstractValidator<GetCustomerByIdQuery>
 {

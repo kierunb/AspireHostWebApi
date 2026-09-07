@@ -4,11 +4,16 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WebApiMediatorCQRS.ApiModels;
+using WebApiMediatorCQRS.Behaviors;
 using WebApiMediatorCQRS.Database;
 
 namespace WebApiMediatorCQRS.Queries;
 
-public sealed record GetAllSuppliersQuery : IRequest<IReadOnlyList<SupplierResponse>>;
+public sealed record GetAllSuppliersQuery : ICacheable<IReadOnlyList<SupplierResponse>>
+{
+    public string CacheKey => QueryCache.Key<GetAllSuppliersQuery>();
+    public IEnumerable<string> CacheTags => [QueryCache.Suppliers];
+}
 
 public sealed class GetAllSuppliersQueryHandler(
     IMapper mapper,
@@ -26,7 +31,12 @@ public sealed class GetAllSuppliersQueryHandler(
             .ToListAsync(cancellationToken);
 }
 
-public sealed record GetSupplierByIdQuery(int SupplierId) : IRequest<SupplierResponse?>;
+public sealed record GetSupplierByIdQuery(int SupplierId) : ICacheable<SupplierResponse?>
+{
+    public string CacheKey => QueryCache.Key<GetSupplierByIdQuery>(SupplierId);
+    public IEnumerable<string> CacheTags => [QueryCache.Suppliers];
+    public bool BypassCache => SupplierId <= 0;
+}
 
 public sealed class GetSupplierByIdQueryValidator : AbstractValidator<GetSupplierByIdQuery>
 {
