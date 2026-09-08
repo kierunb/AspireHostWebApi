@@ -89,7 +89,7 @@ public sealed class CreateProductCommandHandler(
         );
     }
 
-    private static async Task<ProductMutationStatus> ValidateReferencesAsync(
+    internal static async Task<ProductMutationStatus> ValidateReferencesAsync(
         int? supplierId,
         int? categoryId,
         NorthwindContext northwindContext,
@@ -164,23 +164,14 @@ public sealed class UpdateProductCommandHandler(
         if (product is null)
             return new ProductMutationResult(ProductMutationStatus.NotFound);
 
-        if (
-            request.SupplierId.HasValue
-            && !await northwindContext.Suppliers.AnyAsync(
-                supplier => supplier.SupplierId == request.SupplierId.Value,
-                cancellationToken
-            )
-        )
-            return new ProductMutationResult(ProductMutationStatus.InvalidSupplier);
-
-        if (
-            request.CategoryId.HasValue
-            && !await northwindContext.Categories.AnyAsync(
-                category => category.CategoryId == request.CategoryId.Value,
-                cancellationToken
-            )
-        )
-            return new ProductMutationResult(ProductMutationStatus.InvalidCategory);
+        var referenceStatus = await CreateProductCommandHandler.ValidateReferencesAsync(
+            request.SupplierId,
+            request.CategoryId,
+            northwindContext,
+            cancellationToken
+        );
+        if (referenceStatus is not ProductMutationStatus.Success)
+            return new ProductMutationResult(referenceStatus);
 
         product.ProductName = request.ProductName;
         product.SupplierId = request.SupplierId;
